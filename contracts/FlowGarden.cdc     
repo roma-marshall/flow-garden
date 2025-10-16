@@ -1,0 +1,39 @@
+pub contract FlowGarden {
+
+    pub enum Stage: UInt8 {
+        case Seed
+        case Sprout
+        case Bloom
+    }
+
+    pub resource NFT {
+        pub var id: UInt64
+        pub var stage: Stage
+        pub var metadata: {String: String}
+
+        pub fun grow() {
+            if self.stage == Stage.Seed {
+                self.stage = Stage.Sprout
+                self.metadata["name"] = "Sprout 🌱"
+            } else if self.stage == Stage.Sprout {
+                self.stage = Stage.Bloom
+                self.metadata["name"] = "Bloom 🌸"
+            }
+        }
+    }
+
+    access(self) var totalMinted: UInt64
+
+    pub fun mint(): @NFT {
+        self.totalMinted = self.totalMinted + 1
+        return <- create NFT(
+            id: self.totalMinted,
+            stage: Stage.Seed,
+            metadata: {"name": "Seed 🌰"}
+        )
+    }
+
+    init() {
+        self.totalMinted = 0
+    }
+}
