@@ -1,0 +1,26 @@
+{
+  "contracts": {
+    "FlowGarden": "./contracts/FlowGarden.cdc",
+    "GrowActionContract": "./contracts/GrowActionContract.cdc"
+  },
+  "accounts": {
+    "testnet": {
+      "address": "0xeb21973261cf61d5",
+      "key": {
+        "type": "hex",
+        "index": 0,
+        "signatureAlgorithm": "ECDSA_secp256k1",
+        "hashAlgorithm": "SHA2_256",
+        "privateKey": "${PRIVATE_KEY}"
+      }
+    }
+  },
+  "deployments": {
+    "testnet": {
+      "testnet": ["FlowGarden", "GrowActionContract"]
+    }
+  },
+  "networks": {
+    "testnet": "access.devnet.nodes.onflow.org:9000"
+  }
+}
