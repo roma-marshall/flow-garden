@@ -13,7 +13,13 @@
 
     <div v-else class="w-full max-w-md space-y-6">
       <div class="p-6 bg-white rounded-2xl shadow text-center">
-        <p class="text-lg">Connected: <b>{{ user.addr }}</b></p>
+        <p class="text-lg break-all">Connected: <b>{{ user.addr }}</b></p>
+        <button
+            class="mt-4 px-5 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
+            @click="disconnectWallet"
+        >
+          Disconnect Wallet
+        </button>
       </div>
 
       <div class="p-6 bg-white rounded-2xl shadow text-center space-y-4">
@@ -30,6 +36,13 @@
         >
           🌿 Grow
         </button>
+
+        <button
+            class="w-full px-6 py-3 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition"
+            @click="loadStage"
+        >
+          🔄 Refresh Stage
+        </button>
       </div>
 
       <div v-if="stage" class="p-6 bg-white rounded-2xl shadow text-center">
@@ -44,7 +57,7 @@
 import { ref, onMounted } from 'vue'
 import * as fcl from "@onflow/fcl"
 
-// ✅ FCL config for Flow Testnet
+// ✅ Flow Testnet FCL config
 fcl.config()
     .put("app.detail.title", "FlowGarden")
     .put("app.detail.icon", "https://flow.com/img/flow-logo.svg")
@@ -55,13 +68,22 @@ fcl.config()
 const user = ref<any>(null)
 const stage = ref<string>('')
 
+// подписка на пользователя
 fcl.currentUser.subscribe(u => (user.value = u))
 
+// подключение кошелька
 const connectWallet = async () => {
   await fcl.authenticate()
 }
 
-// ✅ Mint Seed NFT
+// ✅ новый метод — отключение кошелька
+const disconnectWallet = async () => {
+  await fcl.unauthenticate()
+  user.value = null
+  stage.value = ''
+}
+
+// mint NFT
 const mintNFT = async () => {
   const txId = await fcl.mutate({
     cadence: `
@@ -71,7 +93,7 @@ const mintNFT = async () => {
         prepare(acct: AuthAccount) {
           let nft <- FlowGarden.mint()
           acct.save(<-nft, to: /storage/MySeedNFT)
-          log("✅ Minted a new Seed NFT")
+          log("✅ Minted new Seed NFT")
         }
       }
     `,
@@ -82,9 +104,10 @@ const mintNFT = async () => {
   })
   console.log("TX:", txId)
   alert("Seed NFT minted! 🌰")
+  await loadStage()
 }
 
-// ✅ Grow NFT manually
+// grow NFT
 const growNFT = async () => {
   const txId = await fcl.mutate({
     cadence: `
@@ -106,10 +129,12 @@ const growNFT = async () => {
   })
   console.log("TX:", txId)
   alert("NFT grew one stage 🌿")
+  await loadStage()
 }
 
-// ✅ Optional — read current stage
-onMounted(async () => {
+// загрузка стадии
+const loadStage = async () => {
+  if (!user.value?.addr) return
   try {
     const res = await fcl.query({
       cadence: `
@@ -125,12 +150,17 @@ onMounted(async () => {
           return nft.metadata["name"] ?? "Unknown"
         }
       `,
-      args: (arg, t) => [arg(user.value?.addr, t.Address)]
+      args: (arg, t) => [arg(user.value.addr, t.Address)]
     })
     stage.value = res
   } catch (e) {
     console.warn(e)
   }
+}
+
+// подгрузка при входе
+onMounted(() => {
+  if (user.value?.addr) loadStage()
 })
 </script>
 
