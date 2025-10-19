@@ -27,3 +27,6 @@ After a few growth cycles, your NFT fully blossoms 🌸 and becomes a permanent 
 
 Flow Garden demonstrates how blockchain automation can create living, evolving NFTs —
 where time itself becomes part of the game. It’s a friendly introduction to on-chain automation using Flow’s newest developer primitives.
+
+## 📄 License
+MIT License
